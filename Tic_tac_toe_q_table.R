@@ -74,6 +74,10 @@ train_q_learning <- function(episodes = 50000, alpha = 0.5, gamma = 0.9, epsilon
       reward <- 0
       winner <- get_winner(board)
       if (!is.null(winner)) {
+        # The winner is always the player since you can only win on your turn.
+        # I noticed the model is decent at offense but really bad at defence,
+        # and I think that's because it doesn't get any negative reward for
+        # allowing the opponent to win.
         reward <- ifelse(winner == player, 1, -1)
       }
       
