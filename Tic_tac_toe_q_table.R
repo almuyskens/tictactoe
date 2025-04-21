@@ -1,10 +1,10 @@
 # train_q_table_fixed.R
 rm(list=ls())
-initialize_board <- function() rep("", 9)
+initialize_board <- function() rep(" ", 9)
 
-is_terminal <- function(board) !is.null(get_winner(board)) || all(board != "")
+is_terminal <- function(board) !is.null(get_winner(board)) || all(board != " ")
 
-available_moves <- function(board) which(board == "")
+available_moves <- function(board) which(board == " ")
 
 board_to_state <- function(board) paste(board, collapse = "")
 
@@ -15,7 +15,7 @@ get_winner <- function(board) {
     c(1,5,9), c(3,5,7)
   )
   for (line in lines) {
-    if (board[line[1]] != "" &&
+    if (board[line[1]] != " " &&
         board[line[1]] == board[line[2]] &&
         board[line[1]] == board[line[3]]) {
       return(board[line[1]])

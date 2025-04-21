@@ -11,13 +11,13 @@ check_winner <- function(board) {
     c(1,5,9), c(3,5,7)
   )
   for (combo in wins) {
-    if (board[combo[1]] != "" &&
+    if (board[combo[1]] != " " &&
         board[combo[1]] == board[combo[2]] &&
         board[combo[2]] == board[combo[3]]) {
       return(board[combo[1]])
     }
   }
-  if (all(board != "")) return("Draw")
+  if (all(board != " ")) return("Draw")
   return(NULL)
 }
 
@@ -29,7 +29,7 @@ resample <- function(x, ...) x[sample.int(length(x), ...)]
 # AI move using Q-table
 get_best_move <- function(board) {
   state <- board_to_state(board)
-  legal_moves <- which(board == "")
+  legal_moves <- which(board == " ")
   
   if (!state %in% names(q_table)) {
     return(resample(legal_moves, 1))
@@ -58,12 +58,12 @@ ui <- fluidPage(
 
 # Server
 server <- function(input, output, session) {
-  board <- reactiveVal(rep("", 9))
+  board <- reactiveVal(rep(" ", 9))
   turn <- reactiveVal("X")  # Human = X, AI = O
   winner <- reactiveVal(NULL)
   
   observeEvent(input$reset, {
-    board(rep("", 9))
+    board(rep(" ", 9))
     turn("X")
     winner(NULL)
   })
@@ -95,7 +95,7 @@ server <- function(input, output, session) {
         inputId = paste0("cell", i),
         label = b[i],
         style = "height:60px;width:60px;font-size:24px;",
-        disabled = b[i] != "" || !is.null(winner()) || turn() != "X"
+        disabled = b[i] != " " || !is.null(winner()) || turn() != "X"
       )
     })
     div(style = "display:grid;grid-template-columns:repeat(3, 60px);gap:5px;", buttons)
@@ -104,7 +104,7 @@ server <- function(input, output, session) {
   # Human move
   lapply(1:9, function(i) {
     observeEvent(input[[paste0("cell", i)]], {
-      if (turn() == "X" && board()[i] == "" && is.null(winner())) {
+      if (turn() == "X" && board()[i] == " " && is.null(winner())) {
         new_board <- board()
         new_board[i] <- "X"
         board(new_board)
