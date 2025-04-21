@@ -6,7 +6,15 @@ is_terminal <- function(board) !is.null(get_winner(board)) || all(board != " ")
 
 available_moves <- function(board) which(board == " ")
 
-board_to_state <- function(board) paste(board, collapse = "")
+board_to_state <- function(board, flipped = false) {
+  state <- paste(board, collapse = "")
+  if (flipped) {
+    state <- gsub("X", "Z", state)
+    state <- gsub("O", "X", state)
+    state <- gsub("Z", "O", state)
+  }
+  return(state)
+}
 
 get_winner <- function(board) {
   lines <- list(
@@ -47,7 +55,8 @@ train_q_learning <- function(episodes = 50000, alpha = 0.5, gamma = 0.9, epsilon
     player <- "X"
     
     while (!is_terminal(board)) {
-      state <- board_to_state(board)
+      flipped <- player == "X"
+      state <- board_to_state(board, flipped = flipped)
       legal_moves <- available_moves(board)
       
       if (!state %in% names(q_table)) {
@@ -56,7 +65,7 @@ train_q_learning <- function(episodes = 50000, alpha = 0.5, gamma = 0.9, epsilon
       
       action <- epsilon_greedy(q_table, state, legal_moves, epsilon)
       board[action] <- player
-      new_state <- board_to_state(board)
+      new_state <- board_to_state(board, flipped = flipped)
       
       if (!new_state %in% names(q_table)) {
         q_table[[new_state]] <- setNames(rep(0, 9), as.character(1:9))
