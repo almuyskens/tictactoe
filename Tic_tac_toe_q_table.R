@@ -6,12 +6,17 @@ is_terminal <- function(board) !is.null(get_winner(board)) || all(board != " ")
 
 available_moves <- function(board) which(board == " ")
 
-board_to_state <- function(board, flipped = false) {
+flip <- function(state) {
+  state <- gsub("X", "Z", state)
+  state <- gsub("O", "X", state)
+  state <- gsub("Z", "O", state)
+  return(state)
+}
+
+board_to_state <- function(board, flipped = FALSE) {
   state <- paste(board, collapse = "")
   if (flipped) {
-    state <- gsub("X", "Z", state)
-    state <- gsub("O", "X", state)
-    state <- gsub("Z", "O", state)
+    return(flip(state))
   }
   return(state)
 }
@@ -36,7 +41,7 @@ resample <- function(x, ...) x[sample.int(length(x), ...)]
 
 epsilon_greedy <- function(q_table, state, legal_actions, epsilon) {
   legal_actions <- as.character(legal_actions)
-  state_q <- q_table[[state]]
+  state_q <- q_table[[state]]  
   if (runif(1) < epsilon) {
     return(as.integer(resample(legal_actions, 1)))
   } else {
@@ -47,18 +52,26 @@ epsilon_greedy <- function(q_table, state, legal_actions, epsilon) {
   }
 }
 
-train_q_learning <- function(episodes = 50000, alpha = 0.5, gamma = 0.9, epsilon = 0.1) {
+train_q_learning <- function(
+  episodes = 100000,
+  alpha = 0.1,
+  gamma = 0.9,
+  epsilon_start = 1.0,
+  epsilon_end = 0.01,
+  epsilon_decay = 0.0001
+) {
   q_table <- list()
   
   for (ep in 1:episodes) {
     board <- initialize_board()
     player <- "X"
+    epsilon <- epsilon_end + (epsilon_start - epsilon_end) * exp(-epsilon_decay * ep)
     
     while (!is_terminal(board)) {
       flipped <- player == "X"
       state <- board_to_state(board, flipped = flipped)
       legal_moves <- available_moves(board)
-      
+
       if (!state %in% names(q_table)) {
         q_table[[state]] <- setNames(rep(0, 9), as.character(1:9))
       }
@@ -78,7 +91,7 @@ train_q_learning <- function(episodes = 50000, alpha = 0.5, gamma = 0.9, epsilon
         # I noticed the model is decent at offense but really bad at defence,
         # and I think that's because it doesn't get any negative reward for
         # allowing the opponent to win.
-        reward <- ifelse(winner == player, 1, -1)
+        reward <- 1
       }
       
       # Q-learning update
@@ -100,7 +113,7 @@ train_q_learning <- function(episodes = 50000, alpha = 0.5, gamma = 0.9, epsilon
       player <- ifelse(player == "X", "O", "X")
     }
     
-    if (ep %% 5000 == 0) cat("Episode:", ep, "\n")
+    if (ep %% 5000 == 0) cat("Episode:", ep, "/", episodes, "| epsilon:", round(epsilon, 4), "| Q-table size:", length(q_table), "\n")
   }
   
   return(q_table)
