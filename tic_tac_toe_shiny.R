@@ -24,13 +24,15 @@ check_winner <- function(board) {
 # Convert board to state string
 board_to_state <- function(board) paste(board, collapse = "")
 
+resample <- function(x, ...) x[sample.int(length(x), ...)]
+
 # AI move using Q-table
 get_best_move <- function(board) {
   state <- board_to_state(board)
   legal_moves <- which(board == "")
   
   if (!state %in% names(q_table)) {
-    return(sample(legal_moves, 1))
+    return(resample(legal_moves, 1))
   }
   
   q_vals <- q_table[[state]]
@@ -38,12 +40,12 @@ get_best_move <- function(board) {
   
   # Fallback if none are valid
   if (length(legal_q) == 0 || all(is.na(legal_q))) {
-    return(sample(legal_moves, 1))
+    return(resample(legal_moves, 1))
   }
   
   max_q <- max(legal_q, na.rm = TRUE)
   best_moves <- as.integer(names(legal_q)[which(legal_q == max_q)])
-  sample(best_moves, 1)
+  resample(best_moves, 1)
 }
 
 # UI

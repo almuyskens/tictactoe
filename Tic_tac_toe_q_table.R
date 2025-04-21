@@ -24,6 +24,8 @@ get_winner <- function(board) {
   return(NULL)
 }
 
+resample <- function(x, ...) x[sample.int(length(x), ...)]
+
 epsilon_greedy <- function(q_table, state, legal_actions, epsilon) {
   legal_actions <- as.character(legal_actions)
   
@@ -34,21 +36,13 @@ epsilon_greedy <- function(q_table, state, legal_actions, epsilon) {
   }
   
   state_q <- q_table[[state]]
-  
-  # Ensure all legal actions are initialized
-  missing_actions <- setdiff(legal_actions, names(state_q))
-  if (length(missing_actions) > 0) {
-    state_q[missing_actions] <- 0
-    q_table[[state]] <- state_q
-  }
-  
   if (runif(1) < epsilon) {
-    return(as.integer(sample(legal_actions, 1)))
+    return(as.integer(resample(legal_actions, 1)))
   } else {
     legal_q <- state_q[legal_actions]
     max_q <- max(legal_q, na.rm = TRUE)
     best_actions <- names(legal_q)[which(legal_q == max_q)]
-    return(as.integer(sample(best_actions, 1)))
+    return(as.integer(resample(best_actions, 1)))
   }
 }
 
