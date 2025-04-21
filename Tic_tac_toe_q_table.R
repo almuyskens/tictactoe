@@ -28,13 +28,6 @@ resample <- function(x, ...) x[sample.int(length(x), ...)]
 
 epsilon_greedy <- function(q_table, state, legal_actions, epsilon) {
   legal_actions <- as.character(legal_actions)
-  
-  if (length(legal_actions) == 0) return(NULL)
-  
-  if (!state %in% names(q_table)) {
-    return(sample(legal_actions, 1))
-  }
-  
   state_q <- q_table[[state]]
   if (runif(1) < epsilon) {
     return(as.integer(resample(legal_actions, 1)))
@@ -62,8 +55,6 @@ train_q_learning <- function(episodes = 50000, alpha = 0.5, gamma = 0.9, epsilon
       }
       
       action <- epsilon_greedy(q_table, state, legal_moves, epsilon)
-      if (is.null(action)) break
-      
       board[action] <- player
       new_state <- board_to_state(board)
       
@@ -88,6 +79,10 @@ train_q_learning <- function(episodes = 50000, alpha = 0.5, gamma = 0.9, epsilon
       }
       
       q_table[[state]][as.character(action)] <- old_q + alpha * (reward + gamma * future_q - old_q)
+
+      if (is_terminal(board)) {
+        break
+      }
       
       player <- ifelse(player == "X", "O", "X")
     }
