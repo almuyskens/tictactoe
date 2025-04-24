@@ -61,7 +61,6 @@ train_q_learning <- function(
   epsilon_decay = 0.0001
 ) {
   q_table <- list()
-  
   for (ep in 1:episodes) {
     board <- initialize_board()
     player <- "X"
@@ -86,14 +85,23 @@ train_q_learning <- function(
       
       reward <- 0
       winner <- get_winner(board)
-      if (!is.null(winner)) {
-        # The winner is always the player since you can only win on your turn.
-        # I noticed the model is decent at offense but really bad at defence,
-        # and I think that's because it doesn't get any negative reward for
-        # allowing the opponent to win.
-        reward <- 1
-      }
       
+      if (!is.null(winner)) {
+        reward <- 1  # Player just won
+      } else {
+        # Simulate opponent's best response
+        opponent <- ifelse(player == "X", "O", "X")
+        opp_moves <- available_moves(board)
+        for (opp_move in opp_moves) {
+          temp_board <- board
+          temp_board[opp_move] <- opponent
+          opp_win <- get_winner(temp_board)
+          if (!is.null(opp_win) && opp_win == opponent) {
+            reward <- -1  # Penalize for enabling an immediate loss
+            break
+          }
+        }
+      }
       # Q-learning update
       old_q <- q_table[[state]][as.character(action)]
       
@@ -123,3 +131,4 @@ train_q_learning <- function(
 set.seed(42)
 q_table <- train_q_learning()
 saveRDS(q_table, "tic_tac_toe_qtable.rds")
+
