@@ -1,0 +1,10 @@
+name: deploy
+title:
+username: realgoodai
+account: realgoodai
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 14604508
+bundleId: 10171539
+url: https://realgoodai.shinyapps.io/deploy/
+version: 1
